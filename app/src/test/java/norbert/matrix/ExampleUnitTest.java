@@ -1,4 +1,4 @@
-package com.example.cpodariu.intelipark_android;
+package norbert.matrix;
 
 import org.junit.Test;
 
