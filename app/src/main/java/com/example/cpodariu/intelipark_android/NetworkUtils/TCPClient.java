@@ -1,5 +1,8 @@
 package com.example.cpodariu.intelipark_android.NetworkUtils;
 
+import android.content.Context;
+import android.widget.Toast;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -10,27 +13,50 @@ import java.net.Socket;
  * Created by cpodariu on 04.11.2017.
  */
 
-public class TCPClient {
-    public static final String IP = "192.168.1.236";
-    public static final int PORT = 1234;
-    private String message;
 
-    public TCPClient(String message) {
+import java.io.*;
+import java.net.Socket;
+import java.util.ArrayList;
+
+public class TCPClient {
+    private ArrayList<String> message;
+    private final String IP = "192.168.1.236";
+    private final int PORT = 1234;
+
+    private Context context;
+
+    public TCPClient(ArrayList<String> message) {
         this.message = message;
     }
 
-    public void run(){
+    public ArrayList<String> run(){
+//        test params
+        ArrayList<String> defautResult;
+        defautResult = new ArrayList<String>();
+        defautResult.add("true");
+
+        Socket backupSocket = null;
         try{
             BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
             Socket clientSocket = new Socket(IP, PORT);
-            System.out.println("Connected to server!");
-            DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-            outToServer.writeBytes(message);
-            clientSocket.close();
+            backupSocket = clientSocket;
+            ObjectOutputStream objectOutput = new ObjectOutputStream(clientSocket.getOutputStream());
+            objectOutput.writeObject(message);
+            message = null;
+            ObjectInputStream objectInput = new ObjectInputStream(clientSocket.getInputStream());
+            int i = 0;
+            try {
+                Object object = objectInput.readObject();
+                message =  (ArrayList<String>) object;
+                clientSocket.close();
+                return message;
+            } catch (ClassNotFoundException e) {
+                clientSocket.close();
+                return defautResult;
+            }
         }
         catch (IOException e){
-            System.out.println(e.getMessage());
+            return defautResult;
         }
-
     }
 }

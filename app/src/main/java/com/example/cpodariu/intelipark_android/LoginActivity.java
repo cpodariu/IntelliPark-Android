@@ -3,52 +3,35 @@ package com.example.cpodariu.intelipark_android;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.app.LoaderManager.LoaderCallbacks;
 
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
-import android.net.Uri;
+import android.content.Context;
+import android.content.Intent;
+import android.support.v7.app.AppCompatActivity;
+
 import android.os.AsyncTask;
 
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
+
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.cpodariu.intelipark_android.NetworkUtils.TCPClient;
+import com.example.cpodariu.intelipark_android.Utils.SharedPreferencesHelper;
 
 import java.util.ArrayList;
-import java.util.List;
 
 
 /**
  * A login screen that offers login via email/password.
  */
 public class LoginActivity extends AppCompatActivity {
-
-
-    /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
-
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "foo@example.com:hello", "bar@example.com:world"
-    };
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
@@ -66,18 +49,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         // Set up the login form.
         mEmailView = (TextView) findViewById(R.id.email);
-
         mPasswordView = (EditText) findViewById(R.id.password);
-        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
-                    return true;
-                }
-                return false;
-            }
-        });
 
         Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
@@ -138,7 +110,7 @@ public class LoginActivity extends AppCompatActivity {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
+            mAuthTask = new UserLoginTask(email, password, getApplicationContext());
             mAuthTask.execute((Void) null);
         }
     }
@@ -209,16 +181,17 @@ public class LoginActivity extends AppCompatActivity {
 
         private final String mEmail;
         private final String mPassword;
+        private Context mContext;
 
-        UserLoginTask(String email, String password) {
+        UserLoginTask(String email, String password, Context ctx) {
+            super();
             mEmail = email;
             mPassword = password;
+            mContext = ctx;
         }
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
-
 /// /            try {
 //                // Simulate network access.
 //                Thread.sleep(2000);
@@ -233,9 +206,25 @@ public class LoginActivity extends AppCompatActivity {
 //                    return pieces[1].equals(mPassword);
 //                }
 //            }
-            new TCPClient("test message").run();
+//            new TCPClient("test message").run();
             // TODO: register the new account here.
-            return true;
+            ArrayList<String> parameters = new ArrayList<String>();
+            parameters.add("login");
+            parameters.add(mEmail);
+            parameters.add(mPassword);
+            ArrayList<String> result = new TCPClient(parameters).run();
+            if (result == null)
+            {
+                return false;
+            }
+            if (result.size() == 0) {
+                return false;
+            }
+            if (result.get(0).equals("true")) {
+
+                return true;
+            }
+            return false;
         }
 
         @Override
@@ -244,10 +233,12 @@ public class LoginActivity extends AppCompatActivity {
             showProgress(false);
 
             if (success) {
+                Intent intent = new Intent(mContext, ParkingSpotActivity.class);
+                SharedPreferencesHelper.logIn(mEmail, mPassword, LoginActivity.this);
+                startActivity(intent);
                 finish();
             } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
+                Toast.makeText(LoginActivity.this, "Login request failed.", Toast.LENGTH_SHORT).show();
             }
         }
 
