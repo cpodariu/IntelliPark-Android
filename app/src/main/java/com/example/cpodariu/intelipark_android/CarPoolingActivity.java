@@ -6,12 +6,10 @@ import android.os.Bundle;
  * Created by cpodariu on 04.11.2017.
  */
 
-public class ParkingSpotActivity extends BaseMainActivity{
+public class CarPoolingActivity extends BaseMainActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        this.contentFragment = new ParkingSpotFragment();
+        this.contentFragment = new CarpoolingFragment();
         super.onCreate(savedInstanceState);
-        Notifications alarm = new Notifications();
-        alarm.setAlarm(this);
     }
 }

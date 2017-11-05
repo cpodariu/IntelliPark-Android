@@ -16,6 +16,7 @@ import java.net.Socket;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 public class TCPClient {
@@ -29,15 +30,14 @@ public class TCPClient {
         this.message = message;
     }
 
-    public ArrayList<String> run(){
+    public ArrayList<String> run() {
 //        test params
-        ArrayList<String> defautResult;
-        defautResult = new ArrayList<String>();
-        defautResult.add("true");
+        ArrayList<String> defautResult = null;
+//        defautResult = new ArrayList<String>();
+//        defautResult.add("true");
 
         Socket backupSocket = null;
-        try{
-            BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
+        try {
             Socket clientSocket = new Socket(IP, PORT);
             backupSocket = clientSocket;
             ObjectOutputStream objectOutput = new ObjectOutputStream(clientSocket.getOutputStream());
@@ -47,16 +47,45 @@ public class TCPClient {
             int i = 0;
             try {
                 Object object = objectInput.readObject();
-                message =  (ArrayList<String>) object;
+                message = (ArrayList<String>) object;
                 clientSocket.close();
                 return message;
             } catch (ClassNotFoundException e) {
                 clientSocket.close();
                 return defautResult;
             }
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        catch (IOException e){
-            return defautResult;
+        return defautResult;
+    }
+
+    public ArrayList<ArrayList<String>> runForTable() {
+        Socket backupSocket = null;
+        try {
+            Socket clientSocket = new Socket(IP, PORT);
+            backupSocket = clientSocket;
+            ObjectOutputStream objectOutput = new ObjectOutputStream(clientSocket.getOutputStream());
+            objectOutput.writeObject(message);
+            message = null;
+            ObjectInputStream objectInput = new ObjectInputStream(clientSocket.getInputStream());
+            int i = 0;
+            ArrayList<ArrayList<String>> notifs = new ArrayList<>();
+            int size = objectInput.readInt();
+            for (int index = 0; index < size; index++) {
+                Object notifobject = objectInput.readObject();
+                notifs.add((ArrayList<String>) notifobject);
+            }
+            return notifs;
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
+        return null;
     }
 }

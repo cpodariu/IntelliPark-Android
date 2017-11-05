@@ -39,6 +39,7 @@ public class SharedPreferencesHelper {
         shEditor.putString(USER_EMAIL_KEY, email);
         shEditor.putString(USER_PASSWORD_KEY, password);
         shEditor.putBoolean(IS_USER_LOGGED_IN, true);
+        shEditor.apply();
     }
 
     public static final void logOut(Context ctx)
@@ -48,5 +49,6 @@ public class SharedPreferencesHelper {
         shEditor.putString(USER_EMAIL_KEY, "");
         shEditor.putString(USER_PASSWORD_KEY, "");
         shEditor.putBoolean(IS_USER_LOGGED_IN, false);
+        shEditor.apply();
     }
 }

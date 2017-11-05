@@ -1,32 +1,33 @@
 package com.example.cpodariu.intelipark_android;
 
+
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.view.View;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewStub;
 
-public class BaseMainActivity extends AppCompatActivity
+import com.example.cpodariu.intelipark_android.Utils.SharedPreferencesHelper;
+
+public class BaseMainActivity extends FragmentActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    public int contentViewId = R.layout.content_main;
+    public Fragment contentFragment = new ParkingSpotFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
-        ViewStub stub = (ViewStub) findViewById(R.id.included_view);
-        stub.setLayoutResource(contentViewId);
-        stub.inflate();
+        getSupportFragmentManager().beginTransaction().add(R.id.included_view, contentFragment).commit();
+
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
@@ -79,17 +80,15 @@ public class BaseMainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        if (id == R.id.my_spot) {
+            if (SharedPreferencesHelper.isUserLoggedIn(this))
+                startActivity(new Intent(getBaseContext(), ParkingSpotFragment.class));
+        } else if (id == R.id.log_out) {
+            SharedPreferencesHelper.logOut(this);
+            startActivity(new Intent(getBaseContext(), LoginActivity.class));
+        } else if (id == R.id.carpooling_list)
+        {
+            startActivity(new Intent(getBaseContext(), CarPoolingActivity.class));
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
