@@ -1,9 +1,11 @@
 package norbert.matrix;
 
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.content.Context;
@@ -12,6 +14,9 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 
 import java.io.BufferedReader;
@@ -30,12 +35,14 @@ public class MainActivity extends AppCompatActivity {
     public class MyView extends View {
 
         Paint paint;
-        Path path;
-        List<String> matrix = new ArrayList<>();
+        private ScaleGestureDetector mScaleDetector;
+        private float mScaleFactor = 1.f;
+        private float dX, dY;
 
         public MyView(Context context) {
             super(context);
             init();
+            mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
         }
 
         public MyView(Context context, AttributeSet attrs) {
@@ -55,10 +62,58 @@ public class MainActivity extends AppCompatActivity {
             paint.setStyle(Paint.Style.STROKE);
         }
 
+        private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+            @Override
+            public boolean onScale(ScaleGestureDetector detector) {
+                mScaleFactor *= detector.getScaleFactor();
+
+                // Don't let the object get too small or too large.
+                mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 5.0f));
+
+                invalidate();
+                return true;
+            }
+        }
+
+        public boolean onTouch(View view, MotionEvent event) {
+
+            switch (event.getAction()) {
+
+                case MotionEvent.ACTION_DOWN:
+
+                    dX = view.getX() - event.getRawX();
+                    dY = view.getY() - event.getRawY();
+                    break;
+
+                case MotionEvent.ACTION_MOVE:
+
+                    view.animate()
+                            .x(event.getRawX() + dX)
+                            .y(event.getRawY() + dY)
+                            .setDuration(0)
+                            .start();
+                    break;
+                default:
+                    return false;
+            }
+            return true;
+        }
+
+        @Override
+        public boolean onTouchEvent(MotionEvent ev) {
+            onTouch(this, ev);
+            // Let the ScaleGestureDetector inspect all events.
+            mScaleDetector.onTouchEvent(ev);
+            return true;
+        }
+
         @RequiresApi(api = Build.VERSION_CODES.KITKAT)
         @Override
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
+
+            canvas.save();
+            canvas.scale(mScaleFactor, mScaleFactor);
 
             paint.setTextSize(25);
 
@@ -115,6 +170,8 @@ public class MainActivity extends AppCompatActivity {
                     ++shiftRow;
                 }
             }
+
+            canvas.restore();
         }
     }
 
