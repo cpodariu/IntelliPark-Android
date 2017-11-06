@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,18 +26,23 @@ class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.Notif
 
     ArrayList<ArrayList<String>> notifications;
 
+    public void setNotifications(ArrayList<ArrayList<String>> notifications)
+    {
+        this.notifications = notifications;
+    }
+
     class NotificationAdapterViewHolder extends RecyclerView.ViewHolder {
 
         public TextView mNotificationTv;
-        public Button acceptButton;
-        public Button declineButton;
+        public ImageButton acceptButton;
+        public ImageButton declineButton;
 
         public NotificationAdapterViewHolder(View view)
         {
             super(view);
             mNotificationTv = (TextView) view.findViewById(R.id.tv_notification_data);
-            acceptButton = (Button) view.findViewById(R.id.accept_button);
-            declineButton = (Button) view.findViewById(R.id.declie_button);
+            acceptButton = (ImageButton) view.findViewById(R.id.accept_button);
+            declineButton = (ImageButton) view.findViewById(R.id.declie_button);
         }
     }
 
@@ -61,22 +67,30 @@ class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.Notif
             holder.acceptButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    new AcceptRequest(carPoolingDataForPosition.get(1), position).execute();
+                    new AcceptRequest(carPoolingDataForPosition.get(1), position).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
             });
             holder.declineButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    new Refuse(carPoolingDataForPosition.get(1), position).execute();
+                    new Refuse(carPoolingDataForPosition.get(1), position).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
             });
         }
         else
         {
+            if (carPoolingDataForPosition.get(0).equals("acceptRide"))
+                holder.mNotificationTv.setText(carPoolingDataForPosition.get(2) + " " + carPoolingDataForPosition.get(3) + " accepted your request");
+            if (carPoolingDataForPosition.get(0).equals("rejectRide"))
+                holder.mNotificationTv.setText(carPoolingDataForPosition.get(2) + " " + carPoolingDataForPosition.get(3) + " refused your request");
+            if (carPoolingDataForPosition.get(0).equals("isVacation"))
+                holder.mNotificationTv.setText("You are in vacation between " + carPoolingDataForPosition.get(2) + " and " + carPoolingDataForPosition.get(3));
+
+
             holder.acceptButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
+                    new Seen(carPoolingDataForPosition.get(1), position).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
             });
             holder.declineButton.setVisibility(View.GONE);
@@ -87,7 +101,9 @@ class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.Notif
 
     @Override
     public int getItemCount() {
-        return 0;
+        if (notifications == null)
+            return 0;
+        return notifications.size();
     }
 
     public class AcceptRequest extends AsyncTask<Void, Void, Boolean> {
@@ -106,7 +122,7 @@ class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.Notif
             ArrayList<String> args = new ArrayList<String>();
             args.add("acceptRide");
             args.add(id);
-            result = new TCPClient(args).run();
+            new TCPClient(args).runWithoutReturn();
             return true;
         }
 
@@ -133,7 +149,7 @@ class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.Notif
             ArrayList<String> args = new ArrayList<String>();
             args.add("rejectRide");
             args.add(id);
-            result = new TCPClient(args).run();
+            new TCPClient(args).runWithoutReturn();
             return true;
         }
 
@@ -158,9 +174,9 @@ class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.Notif
         @Override
         protected Boolean doInBackground(Void... voids) {
             ArrayList<String> args = new ArrayList<String>();
-            args.add(id);
             args.add("seen");
-            result = new TCPClient(args).run();
+            args.add(id);
+            new TCPClient(args).runWithoutReturn();
             return true;
         }
 

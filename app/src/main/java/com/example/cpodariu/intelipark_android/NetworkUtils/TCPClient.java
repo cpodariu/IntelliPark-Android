@@ -62,6 +62,20 @@ public class TCPClient {
         return defautResult;
     }
 
+    public void runWithoutReturn() {
+        try {
+            Socket clientSocket = new Socket(IP, PORT);
+            ObjectOutputStream objectOutput = new ObjectOutputStream(clientSocket.getOutputStream());
+            objectOutput.writeObject(message);
+            clientSocket.close();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     public ArrayList<ArrayList<String>> runForTable() {
         Socket backupSocket = null;
         try {

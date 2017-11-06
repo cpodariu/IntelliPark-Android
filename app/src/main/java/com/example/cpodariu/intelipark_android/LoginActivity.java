@@ -8,6 +8,7 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.CpuUsageInfo;
 import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 
@@ -28,6 +29,10 @@ import android.widget.Toast;
 import com.example.cpodariu.intelipark_android.NetworkUtils.TCPClient;
 import com.example.cpodariu.intelipark_android.Utils.SharedPreferencesHelper;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 
@@ -64,6 +69,13 @@ public class LoginActivity extends AppCompatActivity {
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+
+        new GetMap(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+        if (SharedPreferencesHelper.isUserLoggedIn(this)) {
+            startActivity(new Intent(this, ParkingSpotActivity.class));
+            finish();
+        }
     }
 
     /**
@@ -249,6 +261,33 @@ public class LoginActivity extends AppCompatActivity {
         protected void onCancelled() {
             mAuthTask = null;
             showProgress(false);
+        }
+    }
+
+    public class GetMap extends AsyncTask<Void, Void, Boolean> {
+
+        private Context mContext;
+        private String map;
+
+        GetMap(Context ctx) {
+            mContext = ctx;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            try {
+                ArrayList<String> parameters = new ArrayList<String>();
+                parameters.add("getMap");
+                ArrayList<String> result = new TCPClient(parameters).run();
+                map = result.get(0);
+                return true;
+            }catch (Exception e){}
+            return false;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+                SharedPreferencesHelper.setParkingMap(mContext, map);
         }
     }
 }

@@ -12,7 +12,9 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
+import com.example.cpodariu.intelipark_android.Notifs.NotificationActivity;
 import com.example.cpodariu.intelipark_android.Utils.SharedPreferencesHelper;
 
 public class BaseMainActivity extends FragmentActivity
@@ -40,6 +42,14 @@ public class BaseMainActivity extends FragmentActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+//        if (SharedPreferencesHelper.isUserLoggedIn(this))
+//        {
+//            String email = SharedPreferencesHelper.getUserEmail(this);
+//            if (email != null)
+//                ((TextView) navigationView.findViewById(R.id.user_mail)).setText(email);
+//            else
+//                ((TextView) navigationView.findViewById(R.id.user_mail)).setText("");
+//        }
     }
 
     @Override
@@ -81,14 +91,25 @@ public class BaseMainActivity extends FragmentActivity
         int id = item.getItemId();
 
         if (id == R.id.my_spot) {
-            if (SharedPreferencesHelper.isUserLoggedIn(this))
-                startActivity(new Intent(getBaseContext(), ParkingSpotFragment.class));
+            if (SharedPreferencesHelper.isUserLoggedIn(this)) {
+                startActivity(new Intent(getBaseContext(), ParkingSpotActivity.class));
+                finish();
+            }
         } else if (id == R.id.log_out) {
             SharedPreferencesHelper.logOut(this);
             startActivity(new Intent(getBaseContext(), LoginActivity.class));
+            finish();
         } else if (id == R.id.carpooling_list)
         {
             startActivity(new Intent(getBaseContext(), CarPoolingActivity.class));
+            finish();
+        } else if (id == R.id.notifications)
+        {
+            startActivity(new Intent(getBaseContext(), NotificationActivity.class));
+            finish();
+        } else if (id == R.id.show_on_map) {
+            startActivity(new Intent(getBaseContext(), ParkingSpotMapActivity.class));
+            finish();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

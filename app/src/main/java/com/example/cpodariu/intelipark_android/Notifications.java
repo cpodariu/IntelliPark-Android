@@ -14,6 +14,7 @@ import android.support.v4.app.NotificationCompat.Builder;
 import android.widget.Toast;
 
 import com.example.cpodariu.intelipark_android.NetworkUtils.TCPClient;
+import com.example.cpodariu.intelipark_android.Notifs.NotificationActivity;
 import com.example.cpodariu.intelipark_android.Utils.SharedPreferencesHelper;
 
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ public class Notifications extends BroadcastReceiver
         PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "");
         wl.acquire();
 
-        new NotificationRequest(context).execute();
+        new NotificationRequest(context).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         wl.release();
     }
@@ -44,7 +45,7 @@ public class Notifications extends BroadcastReceiver
         AlarmManager am =( AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         Intent i = new Intent(context, Notifications.class);
         PendingIntent pi = PendingIntent.getBroadcast(context, 0, i, 0);
-        am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+        am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                 SystemClock.elapsedRealtime() + 2000,
                 2000, pi); // Millisec * Second * Minute
     }
@@ -88,7 +89,7 @@ public class Notifications extends BroadcastReceiver
                                     .setContentTitle("You have " + res.size() + " notifications")
                                     .setContentText("Click to find out more!");
 
-                    Intent resultIntent = new Intent(ctx, LoginActivity.class);
+                    Intent resultIntent = new Intent(ctx, NotificationActivity.class);
                     PendingIntent resultPendingIntent =
                             PendingIntent.getActivity(
                                     ctx,

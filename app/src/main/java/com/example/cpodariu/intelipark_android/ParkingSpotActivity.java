@@ -11,6 +11,7 @@ public class ParkingSpotActivity extends BaseMainActivity{
     protected void onCreate(Bundle savedInstanceState) {
         this.contentFragment = new ParkingSpotFragment();
         super.onCreate(savedInstanceState);
+
         Notifications alarm = new Notifications();
         alarm.setAlarm(this);
     }

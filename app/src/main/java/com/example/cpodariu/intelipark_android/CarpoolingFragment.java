@@ -38,7 +38,8 @@ public class CarpoolingFragment extends Fragment {
         mAdapter = new CarpoolingAdapter();
         mRecyclerView.setAdapter(mAdapter);
 
-        new RequestCarpoolingInfo().execute();
+        RequestCarpoolingInfo r = new RequestCarpoolingInfo();
+        r.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         return view;
     }
